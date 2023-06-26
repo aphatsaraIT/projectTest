@@ -1,0 +1,54 @@
+server:
+  port: 8085
+
+spring:
+  main:
+    allow-circular-references: true
+    allow-bean-definition-overriding: true
+
+management:
+  health:
+    circuitbreakers:
+      enabled: true
+  endpoints:
+    web:
+      exposure:
+        include: "*"
+  endpoint:
+    health:
+      show-details: always
+
+resilience4j:
+  circuitbreaker:
+    instances:
+      accountServiceBreaker:
+        registerHealthIndicator: true
+        eventConsumerBufferSize: 10
+        failureRateThreshold: 50
+        minimumNumberOfCalls: 5
+        automaticTransitionFromOpenToHalfOpenEnabled: true
+        waitDurationInOpenState: 5s
+        permittedNumberOfCallsInHalfOpenState: 4
+        slidingWindowSize: 10
+        slidingWindowType: COUNT_BASED
+
+  timelimiter:
+    metrics:
+      enabled: true
+    configs:
+      default:
+        timeoutDuration: 3000
+        cancelRunningFuture: true
+    instances:
+      accountServiceTimeout:
+        timeoutDuration: 1000
+        cancelRunningFuture: true
+
+  bulkhead:
+    configs:
+      default:
+        maxConcurrentCalls: 5
+        maxWaitDuration: 0
+    instances:
+      accountBulkhead:
+        baseConfig: default
